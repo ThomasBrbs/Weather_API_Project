@@ -1,7 +1,7 @@
 import requests
 from jsonschema import validate
-from src.schemas.WeatherSchema import weather_response_schema
 
+from schemas.WeatherSchema import weather_response_schema
 BASE_URL = "http://127.0.0.1:8000"
 
 def test_get_current_weather_valid_city():

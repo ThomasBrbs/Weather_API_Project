@@ -11,7 +11,9 @@ class WeatherService:
         env_config = Config(RepositoryEnv(DOTENV_FILE))
         self.openweather_key = env_config.get("OPENWEATHER_API_KEY")
         self.weatherapi_key = env_config.get("WEATHERAPI_KEY")
+        self.api_key_weather = env_config.get("OPENWEATHER_API_KEY")
         self.open_meteo_base = "https://api.open-meteo.com/v1"
+        self.base_url = "http://api.weatherapi.com/v1"
 
     async def get_current_weather(self, city: str):
         try:
@@ -103,12 +105,13 @@ class WeatherService:
 
     def _get_city_coordinates(self, city: str):
         cities = {
-            "paris": {"lat": 48.8566, "lon": 2.3522},
-            "london": {"lat": 51.5074, "lon": -0.1278},
-            "tokyo": {"lat": 35.6762, "lon": 139.6503},
-            "new york": {"lat": 40.7128, "lon": -74.0060}
+            "paris": {"lat": 48.8566, "lon": 2.3522, "country": "France"},
+            "london": {"lat": 51.5074, "lon": -0.1278, "country": "UK"},
+            "tokyo": {"lat": 35.6762, "lon": 139.6503, "country": "Japan"},
+            "new york": {"lat": 40.7128, "lon": -74.0060, "country": "USA"}
         }
         return cities.get(city.lower())
+
 
     def _get_weather_description(self, code: int) -> str:
         mapping = {
@@ -125,15 +128,28 @@ class WeatherService:
 
         avg_temp = sum(s["temperature"] for s in sources) / len(sources)
         avg_humidity = sum(s["humidity"] for s in sources) / len(sources)
+        description = sources[0]["description"]  
 
+        coords = self._get_city_coordinates(city)
+        if not coords:
+            coords = {"lat": 0, "lon": 0}
+        location_data = coords or {"lat": 0, "lon": 0, "country": ""}
+        
         return {
-            "city": city,
-            "timestamp": datetime.utcnow().isoformat() + "Z",
-            "temperature": {
-                "current": round(avg_temp, 1),
-                "unit": "celsius"
+            "location": {
+                "city": city,
+                "lat": coords["lat"],
+                "lon": coords["lon"],
+                "country": location_data.get("country", "")
             },
-            "humidity": round(avg_humidity),
-            "sources": [s["source"] for s in sources],
-            "description": sources[0]["description"]
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "data": {
+                "temperature": {
+                    "current": round(avg_temp, 1),
+                    "unit": "celsius"
+                },
+                "humidity": round(avg_humidity),
+                "description": description
+            },
+            "sources": [s["source"] for s in sources]
         }
