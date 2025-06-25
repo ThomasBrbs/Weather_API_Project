@@ -7,6 +7,9 @@ from unittest.mock import AsyncMock, patch
 from services.WeatherService import WeatherService
 
 from schemas.WeatherSchema import weather_response_schema
+from schemas.HistorySchema import history_response_schema
+from schemas.ForecastSchema import forecast_response_schema
+
 BASE_URL = "http://127.0.0.1:8000"
 
 def test_get_current_weather_valid_city():
@@ -52,3 +55,32 @@ async def test_fallback_when_one_source_fails():
         assert result["data"]["temperature"]["current"] == 22
         assert "weatherapi" in result["sources"]
         assert len(result["sources"]) == 1
+
+
+def test_get_weather_forecast_valid_city():
+    payload = {"city": "Paris"}
+    response = requests.post(f"{BASE_URL}/weather/forecast", json=payload)
+    assert response.status_code == 200
+
+    data = response.json()
+    validate(instance=data, schema=forecast_response_schema)
+    assert data["location"]["city"].lower() == "paris"
+    assert isinstance(data["forecast"], list)
+    assert len(data["forecast"]) > 0
+
+def test_get_weather_history_valid_city():
+    payload = {"city": "Paris", "days": 7}
+    response = requests.post(f"{BASE_URL}/weather/history", json=payload)
+    assert response.status_code == 200
+
+    data = response.json()
+    validate(instance=data, schema=history_response_schema)
+    assert data["location"]["city"].lower() == "paris"
+    assert isinstance(data["history"], list)
+    assert len(data["history"]) == 7
+
+def test_health_check():
+    response = requests.get(f"{BASE_URL}/health")
+    assert response.status_code == 200
+    data = response.json()
+    assert data.get("status") == "ok"

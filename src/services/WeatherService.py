@@ -1,7 +1,7 @@
 import httpx
 from decouple import Config, RepositoryEnv
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 
 DOTENV_FILE = "./config/.env"
 
@@ -153,3 +153,101 @@ class WeatherService:
             },
             "sources": [s["source"] for s in sources]
         }
+        
+    async def get_weather_forecast(self, city: str):
+        coords = self._get_city_coordinates(city)
+        if not coords:
+            raise Exception("City not found")
+
+        try:
+            async with httpx.AsyncClient() as client:
+                url = f"{self.base_url}/forecast.json"
+                resp = await client.get(url, params={
+                    "key": self.weatherapi_key,
+                    "q": city,
+                    "days": 3,
+                    "aqi": "no",
+                    "alerts": "no"
+                })
+                data = resp.json()
+
+            forecast_days = data.get("forecast", {}).get("forecastday", [])
+            if not forecast_days:
+                raise Exception("No forecast data found")
+
+            # Format simplifié de la réponse
+            return {
+                "location": {
+                    "city": city,
+                    "lat": coords["lat"],
+                    "lon": coords["lon"],
+                    "country": coords.get("country", "")
+                },
+                "timestamp": datetime.utcnow().isoformat() + "Z",
+                "forecast": [
+                    {
+                        "date": day["date"],
+                        "description": day["day"]["condition"]["text"],
+                        "temperature": {
+                            "min": day["day"]["mintemp_c"],
+                            "max": day["day"]["maxtemp_c"],
+                            "unit": "celsius"
+                        },
+                        "humidity": day["day"]["avghumidity"]
+                    }
+                    for day in forecast_days
+                ],
+                "sources": ["weatherapi"]
+            }
+        except Exception as e:
+            raise Exception(f"Failed to fetch forecast for {city}: {str(e)}")
+
+    async def get_weather_history(self, city: str, days: int = 7):
+        coords = self._get_city_coordinates(city)
+        if not coords:
+            raise Exception("City not found")
+
+        history = []
+        async with httpx.AsyncClient() as client:
+            end_date = datetime.utcnow()
+            for i in range(days):
+                date = (end_date - timedelta(days=i)).strftime("%Y-%m-%d")
+                url = f"{self.base_url}/history.json"
+                resp = await client.get(url, params={
+                    "key": self.weatherapi_key,
+                    "q": city,
+                    "dt": date,
+                    "aqi": "no",
+                    "alerts": "no"
+                })
+                data = resp.json()
+                day_data = data.get("forecast", {}).get("forecastday", [])
+                if day_data:
+                    day = day_data[0]
+                    history.append({
+                        "date": day["date"],
+                        "description": day["day"]["condition"]["text"],
+                        "temperature": {
+                            "min": day["day"]["mintemp_c"],
+                            "max": day["day"]["maxtemp_c"],
+                            "unit": "celsius"
+                        },
+                        "humidity": day["day"]["avghumidity"]
+                    })
+
+        if not history:
+            raise Exception("No history data found")
+
+        return {
+            "location": {
+                "city": city,
+                "lat": coords["lat"],
+                "lon": coords["lon"],
+                "country": coords.get("country", "")
+            },
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "history": history,
+            "sources": ["weatherapi"]
+        }
+
+
