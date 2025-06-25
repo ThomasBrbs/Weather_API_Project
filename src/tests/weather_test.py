@@ -2,8 +2,7 @@ import pytest
 import requests
 from jsonschema import validate
 
-import pytest
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 from services.WeatherService import WeatherService
 
 from schemas.WeatherSchema import weather_response_schema
