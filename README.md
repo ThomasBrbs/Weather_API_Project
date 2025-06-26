@@ -17,8 +17,7 @@ Elle expose plusieurs routes pour récupérer la météo actuelle, les prévisio
  **Structure du projet**
 Le projet respecte une architecture modulaire inspirée du modèle MVC :
 
-
-project/
+<pre>project/
 │
 ├── api.py                      
 ├── src/
@@ -27,7 +26,8 @@ project/
 │   ├── models/
 │   │   └── ModelRequest.py      
 │   └── services/
-│       └── WeatherService.py    
+│       └── WeatherService.py    </pre>
+
 api.py : Déclare les routes et connecte les différentes couches
 .
 
@@ -76,8 +76,8 @@ Réponse : {"status": "ok"}
 **Lancement du projet**
 Installer les dépendances
 
+<pre>pip install -r requirements.txt</pre>
 
-pip install -r requirements.txt
 Lancer le serveur
 
 
@@ -89,12 +89,12 @@ Tester dans un navigateur ou via Swagger UI
 
 **Exemple de requête POST**
 json
-
-POST /weather/current
+<pre>POST /weather/current
 {
   "city": "Paris",
   "country": "France"
 }
+</pre>
 
 
 
