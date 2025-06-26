@@ -1,6 +1,9 @@
 **Weather API**
+
 Cette API est une application FastAPI organisée autour d’un service météo, avec une architecture claire en couches (controllers, services, models).
 Elle expose plusieurs routes pour récupérer la météo actuelle, les prévisions, et l’historique, le tout via des requêtes POST structurées.
+
+
 
 **Fonctionnalités principales**
 -Météo actuelle (/weather/current)
@@ -17,14 +20,14 @@ Le projet respecte une architecture modulaire inspirée du modèle MVC :
 
 project/
 │
-├── api.py                      # Point d'entrée principal de l'API (FastAPI)
+├── api.py                      
 ├── src/
 │   ├── controllers/
-│   │   └── WeatherController.py # Logique métier liée aux routes météo
+│   │   └── WeatherController.py 
 │   ├── models/
-│   │   └── ModelRequest.py      # Schéma de requête utilisé pour les endpoints météo
+│   │   └── ModelRequest.py      
 │   └── services/
-│       └── WeatherService.py    # Accès aux données météo (API tierce, base, etc.)
+│       └── WeatherService.py    
 api.py : Déclare les routes et connecte les différentes couches
 .
 
@@ -33,6 +36,9 @@ controllers/ : Gère la logique métier (ex : appel des services, validation).
 services/ : Encapsule l’accès aux données ou aux API externes.
 
 models/ : Définit les schémas de données attendus en entrée.
+
+
+
 
 **Endpoints (Routes)**
 POST /weather/current
@@ -64,6 +70,9 @@ Description : Permet de vérifier que l’API est opérationnelle.
 
 Réponse : {"status": "ok"}
 
+
+
+
 **Lancement du projet**
 Installer les dépendances
 
@@ -75,6 +84,9 @@ Lancer le serveur
 uvicorn api:app --reload
 Tester dans un navigateur ou via Swagger UI
 
+
+
+
 **Exemple de requête POST**
 json
 
@@ -83,6 +95,9 @@ POST /weather/current
   "city": "Paris",
   "country": "France"
 }
+
+
+
 **Points clés**
 Toutes les routes météo attendent un JSON conforme au modèle ModelRequest.
 
