@@ -46,7 +46,10 @@ Description : Retourne la météo actuelle pour la localisation fournie.
 
 Body (JSON):
 Doit respecter le schéma ModelRequest.
+<pre>from pydantic import BaseModel
 
+class ModelRequest(BaseModel):
+    city: str</pre>
 Réponse : Détail de la météo du moment.
 
 POST /weather/forecast
@@ -107,9 +110,3 @@ L’API est conçue pour être extensible et maintenable.
 
 N’hésite pas à compléter la section sur le schéma d’entrée (ModelRequest) avec ses champs exacts, si besoin !
 
-
-
-
-
-uvicorn api:app --reload
-Run in the port : http://127.0.0.1:8000
